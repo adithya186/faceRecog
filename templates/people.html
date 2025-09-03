@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}People Management | University Face Attendance{% endblock %}
+{% block content %}
+    <div class="card">
+        <h1>People Management</h1>
+        <p style="color:#4b5563; margin-top:-6px;">Manage enrolled people and system settings</p>
+        
+        <div class="admin-actions">
+            <button id="retrainBtn" class="btn btn-secondary">Retrain Model</button>
+            <button id="statusBtn" class="btn btn-secondary">Check Status</button>
+        </div>
+        
+        <div id="statusInfo" style="display:none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h4>System Status</h4>
+            <div id="statusContent"></div>
+        </div>
+        
+        {% if people %}
+            <div class="people-grid">
+                {% for person in people %}
+                <div class="person-card">
+                    <div class="person-info">
+                        <h3>{{ person.name }}</h3>
+                        <span class="role-badge role-{{ person.role }}">
+                            {{ person.role.title() }}
+                        </span>
+                        <p class="person-stats">
+                            {{ person.attendances|length }} attendance records
+                        </p>
+                    </div>
+                    <div class="person-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deletePerson({{ person.id }}, '{{ person.name }}')">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <h3>No people enrolled</h3>
+                <p>Start by enrolling new people to use the system.</p>
+                <a href="{{ url_for('enroll_page') }}" class="btn btn-primary">Enroll Person</a>
+            </div>
+        {% endif %}
+        
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('index') }}" class="btn" style="background:#6c757d">Home</a>
+            <a href="{{ url_for('enroll_page') }}" class="btn btn-primary">Enroll Person</a>
+        </div>
+    </div>
+
+    <script>
+        async function deletePerson(personId, personName) {
+            if (!confirm(`Are you sure you want to delete ${personName}? This will remove all their attendance records and face data.`)) {
+                return;
+            }
+            
+            try {
+                const res = await fetch(`/api/person/${personId}/delete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const json = await res.json();
+                
+                if (json.ok) {
+                    showToast('Person deleted successfully', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast('Failed to delete person: ' + (json.error || 'Unknown error'), 'error');
+                }
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        }
+
+        document.getElementById('retrainBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('retrainBtn');
+            btn.disabled = true;
+            btn.textContent = 'Retraining...';
+            
+            try {
+                const res = await fetch('/api/recognizer/retrain', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const json = await res.json();
+                
+                if (json.ok) {
+                    showToast('Model retrained successfully', 'success');
+                } else {
+                    showToast('Failed to retrain model: ' + (json.error || 'Unknown error'), 'error');
+                }
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Retrain Model';
+            }
+        });
+
+        document.getElementById('statusBtn').addEventListener('click', async () => {
+            try {
+                const res = await fetch('/api/recognizer/status');
+                const json = await res.json();
+                
+                if (json.ok) {
+                    const status = json.status;
+                    const statusContent = document.getElementById('statusContent');
+                    statusContent.innerHTML = `
+                        <p><strong>Model Loaded:</strong> ${status.model_loaded ? 'Yes' : 'No'}</p>
+                        <p><strong>Model Path:</strong> ${status.model_path}</p>
+                        <p><strong>Dataset Directory:</strong> ${status.dataset_dir}</p>
+                        <p><strong>Recognition Threshold:</strong> ${status.threshold}</p>
+                    `;
+                    document.getElementById('statusInfo').style.display = 'block';
+                } else {
+                    showToast('Failed to get status: ' + (json.error || 'Unknown error'), 'error');
+                }
+            } catch (e) {
+                showToast('Error: ' + e.message, 'error');
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}Mark Attendance | University Face Attendance{% endblock %}
+{% block content %}
+    <div class="card">
+        <h1>Mark Attendance</h1>
+        <p style="color:#4b5563; margin-top:-6px;">Look at the camera. We will mark your attendance automatically.</p>
+        <div style="position:relative; display:inline-block;">
+            <video id="video" autoplay playsinline width="480" height="360" style="border-radius:12px;background:#000; box-shadow: 0 8px 30px rgba(17,24,39,.2)"></video>
+            <div id="overlay" style="position:absolute; left:10px; bottom:10px; background:rgba(0,0,0,0.6); color:#fff; padding:6px 10px; border-radius:6px; font-weight:600;">
+                Waiting for camera...
+            </div>
+        </div>
+        <div>
+            <a href="{{ url_for('index') }}" class="btn" style="background:#6c757d">Home</a>
+        </div>
+        <p id="status"></p>
+    </div>
+    <canvas id="canvas" width="480" height="360" style="display:none"></canvas>
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const statusEl = document.getElementById('status');
+        let videoReady = false;
+        let autoLoop = null;
+        let isRequestInFlight = false;
+        async function init() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                await new Promise(resolve => {
+                    if (video.readyState >= 2) { videoReady = true; return resolve(); }
+                    video.onloadedmetadata = () => { videoReady = true; resolve(); };
+                });
+            } catch (e) {
+                statusEl.textContent = 'Camera access denied: ' + e.message;
+            }
+        }
+        function captureImage() {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/png');
+        }
+        const overlay = document.getElementById('overlay');
+        // Removed manual button; attendance will be marked automatically below
+        let hasMarked = false;
+        async function autoRecognizeOnce() {
+            if (!videoReady || isRequestInFlight) return;
+            if (hasMarked) return;
+            isRequestInFlight = true;
+            try {
+                const dataUrl = captureImage();
+                const res = await fetch("{{ url_for('api_mark') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataUrl })
+                });
+                const json = await res.json().catch(() => ({ ok:false }));
+                if (res.ok && json && json.ok) {
+                    hasMarked = true;
+                    const conf = typeof json.confidence === 'number' ? json.confidence.toFixed(0) : 'n/a';
+                    overlay.textContent = json.name + ' — Your attendance is marked';
+                    statusEl.textContent = 'Your attendance is marked';
+                    if (window.showToast) showToast('Attendance marked', 'success');
+                    if (autoLoop) { clearInterval(autoLoop); autoLoop = null; }
+                    setTimeout(() => { window.location.href = "{{ url_for('index') }}"; }, 1200);
+                } else if (json && json.error === 'Unknown face') {
+                    overlay.textContent = 'Unknown face';
+                } else {
+                    overlay.textContent = '...';
+                }
+            } catch (_) {
+                overlay.textContent = 'Network error';
+            } finally {
+                isRequestInFlight = false;
+            }
+        }
+        async function startAutoLoop() {
+            await init();
+            overlay.textContent = 'Camera ready';
+            autoLoop = setInterval(autoRecognizeOnce, 1500);
+        }
+        startAutoLoop();
+    </script>
+{% endblock %}

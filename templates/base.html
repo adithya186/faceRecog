@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Face Recognition Attendance System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>🎯 Face Attendance</h1>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}" class="nav-link">Home</a>
+                <a href="{{ url_for('enroll_page') }}" class="nav-link">Enroll</a>
+                <a href="{{ url_for('mark_page') }}" class="nav-link">Mark Attendance</a>
+                <a href="{{ url_for('logs_page') }}" class="nav-link">Logs</a>
+                {% if session.admin_logged_in %}
+                    <a href="{{ url_for('people_page') }}" class="nav-link">Admin</a>
+                    <a href="{{ url_for('admin_logout') }}" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('admin_login') }}" class="nav-link">Admin Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2024 Face Recognition Attendance System. Built with Flask & OpenCV.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // Global error handler
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+        });
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

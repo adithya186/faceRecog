@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Home | Face Recognition Attendance{% endblock %}
+{% block content %}
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1>Welcome to Face Recognition Attendance System</h1>
+            <p class="hero-subtitle">Modern, secure, and efficient attendance tracking using advanced face recognition technology.</p>
+        </div>
+    </div>
+
+    <div class="features-grid">
+        <div class="feature-card">
+            <div class="feature-icon">👤</div>
+            <h3>Enroll New Person</h3>
+            <p>Register new students or teachers with their face data for automatic recognition.</p>
+            <a href="{{ url_for('enroll_page') }}" class="btn btn-primary">Enroll Now</a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📸</div>
+            <h3>Mark Attendance</h3>
+            <p>Quick and easy attendance marking with real-time face recognition.</p>
+            <a href="{{ url_for('mark_page') }}" class="btn btn-primary">Mark Attendance</a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>View Logs</h3>
+            <p>Track attendance history and view detailed logs of all attendance events.</p>
+            <a href="{{ url_for('logs_page') }}" class="btn btn-primary">View Logs</a>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">⚙️</div>
+            <h3>Admin Panel</h3>
+            <p>Manage users, view system status, and configure recognition settings.</p>
+            {% if session.admin_logged_in %}
+                <a href="{{ url_for('people_page') }}" class="btn btn-secondary">Admin Panel</a>
+            {% else %}
+                <a href="{{ url_for('admin_login') }}" class="btn btn-secondary">Admin Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="stats-section">
+        <div class="stats-container">
+            <div class="stat-item">
+                <div class="stat-number">{{ total_people or 0 }}</div>
+                <div class="stat-label">Enrolled People</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ total_attendance or 0 }}</div>
+                <div class="stat-label">Total Attendance</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">{{ today_attendance or 0 }}</div>
+                <div class="stat-label">Today's Attendance</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-section">
+        <h2>How It Works</h2>
+        <div class="steps-container">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h4>Enroll</h4>
+                <p>Capture your face image and register with your details</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h4>Recognize</h4>
+                <p>System learns your facial features using AI technology</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h4>Track</h4>
+                <p>Automatic attendance marking when you look at the camera</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Attendance Logs | University Face Attendance{% endblock %}
+{% block content %}
+    <div class="card">
+        <h1>Attendance Logs</h1>
+        <p style="color:#4b5563; margin-top:-6px;">Recent attendance records (latest 200 entries)</p>
+        
+        {% if attendances %}
+            <div class="logs-container">
+                <div class="logs-header">
+                    <div class="log-item-header">Time</div>
+                    <div class="log-item-header">Name</div>
+                    <div class="log-item-header">Role</div>
+                    <div class="log-item-header">Confidence</div>
+                </div>
+                
+                {% for attendance in attendances %}
+                <div class="log-item">
+                    <div class="log-time">
+                        {{ attendance.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+                    </div>
+                    <div class="log-name">{{ attendance.person.name }}</div>
+                    <div class="log-role">
+                        <span class="role-badge role-{{ attendance.person.role }}">
+                            {{ attendance.person.role.title() }}
+                        </span>
+                    </div>
+                    <div class="log-confidence">
+                        {% if attendance.confidence %}
+                            {{ "%.1f"|format(attendance.confidence) }}%
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <h3>No attendance records found</h3>
+                <p>Start marking attendance to see records here.</p>
+                <a href="{{ url_for('mark_page') }}" class="btn btn-primary">Mark Attendance</a>
+            </div>
+        {% endif %}
+        
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('index') }}" class="btn" style="background:#6c757d">Home</a>
+            <a href="{{ url_for('mark_page') }}" class="btn btn-primary">Mark Attendance</a>
+        </div>
+    </div>
+{% endblock %}
