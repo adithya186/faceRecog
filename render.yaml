@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: face-recognition-app
+    env: docker
+    dockerfilePath: ./Dockerfile.ultra-minimal
+    plan: free
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ATTENDANCE_DB_URL
+        value: sqlite:///app/data/attendance.db
+      - key: RECOG_UNKNOWN_DISTANCE
+        value: 65
+      - key: ADMIN_PASSWORD
+        value: admin123
+    healthCheckPath: /
