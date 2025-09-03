@@ -8,7 +8,10 @@ from flask import Flask, jsonify, redirect, render_template, request, url_for, s
 from flask_cors import CORS
 
 from database import db_session, init_db, Person, Attendance
+try:
 from recognizer import FaceRecognizerService
+except ImportError:
+    from recognizer_fallback import FaceRecognizerService
 from model import detect_faces_from_image
 import cv2
 import numpy as np
