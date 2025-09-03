@@ -10,23 +10,24 @@ ENV FLASK_ENV=production
 # Set work directory
 WORKDIR /app
 
-# Install system dependencies in smaller chunks to avoid timeout
+# Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender1 \
     libgomp1 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install OpenCV dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libopencv-dev \
-    python3-opencv \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgtk-3-0 \
+    libavcodec-dev \
+    libavformat-dev \
+    libswscale-dev \
+    libv4l-dev \
+    libxvidcore-dev \
+    libx264-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
+    libopenblas-dev \
     python3-dev \
     gcc \
     g++ \
