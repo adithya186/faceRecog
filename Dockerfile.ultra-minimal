@@ -45,7 +45,7 @@ COPY . .
 # Create data directory
 RUN mkdir -p data/faces data/uploads
 
-# Expose port
+# Expose port (Railway will set PORT env var)
 EXPOSE 5000
 
 # Run the application

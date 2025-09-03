@@ -57,6 +57,11 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/health')
+def health():
+    return jsonify({'status': 'healthy', 'message': 'Face recognition system is running'})
+
+
 @app.route('/enroll')
 def enroll_page():
     return render_template('enroll.html')
@@ -232,7 +237,10 @@ def api_recognizer_retrain():
 
 def main():
     init_db()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    print(f"Starting Flask app on port {port}")
+    print(f"Environment: {os.environ.get('FLASK_ENV', 'development')}")
+    app.run(host='0.0.0.0', port=port, debug=False)
 
 
 if __name__ == '__main__':
